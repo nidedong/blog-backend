@@ -64,6 +64,7 @@ export interface EnvMinioConfig {
   useSSL: boolean;
   accessKey: string;
   secretKey: string;
+  bucketName: string;
 }
 
 export interface EnvClientConfig {

@@ -5,6 +5,7 @@ import { createTransport, Transporter } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { EnvironmentVariable } from 'shared/interfaces';
 import { render } from '@react-email/components';
+import LoginCaptchaEmail from './templates/login-captcha';
 import RegisterCaptchaEmail from './templates/register-captcha';
 import ResetPasswordEmail from './templates/reset-password-captcha';
 
@@ -17,6 +18,31 @@ export class MailService {
     private readonly configService: ConfigService<EnvironmentVariable>,
   ) {
     this.transport = createTransport(options);
+  }
+
+  async sendLoginCaptcha(email: string, captcha: string) {
+    const supportEmail = this.configService.get('mail', {
+      infer: true,
+    }).authUser;
+    const companyName = this.configService.get('app', { infer: true }).name;
+
+    const html = await render(
+      LoginCaptchaEmail({
+        captcha,
+        supportEmail,
+        companyName,
+      }),
+    );
+
+    return this.transport.sendMail({
+      from: {
+        name: 'dbb博客系统邮件',
+        address: this.configService.get('mail', { infer: true }).authUser,
+      },
+      subject: '登录验证码',
+      to: email,
+      html,
+    });
   }
 
   async sendRegisterCaptcha(email: string, captcha: string) {

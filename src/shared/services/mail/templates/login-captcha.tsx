@@ -13,27 +13,25 @@ import {
   Column,
 } from '@react-email/components';
 
-interface ResetPasswordEmailProps {
+interface VerificationEmailProps {
   captcha: string;
   validityMinutes?: number;
-  supportEmail: string;
-  companyName: string;
-  userName: string;
+  supportEmail?: string;
+  companyName?: string;
 }
 
-const ResetPasswordEmail = ({
+const RegisterCaptchaEmail = ({
   captcha,
   validityMinutes = 5,
   supportEmail,
   companyName,
-  userName,
-}: ResetPasswordEmailProps) => {
+}: VerificationEmailProps) => {
   return (
     <Html>
       <Head>
         <title>您的验证码 - {companyName}</title>
       </Head>
-      <Preview>您的【{companyName}】重置密码验证码</Preview>
+      <Preview>您的【{companyName}】登录验证码</Preview>
 
       <Body style={main}>
         <Container style={container}>
@@ -47,11 +45,11 @@ const ResetPasswordEmail = ({
           {/* 主要内容 */}
           <Section style={content}>
             <Heading as="h2" style={title}>
-              您好 {userName}!
+              您好!
             </Heading>
 
             <Text style={paragraph}>
-              您正在尝试重置密码或执行敏感操作，请输入以下验证码完成验证：
+              您正在尝试登录或执行敏感操作，请输入以下验证码完成验证：
             </Text>
 
             {/* 验证码展示区 */}
@@ -187,4 +185,4 @@ const footerLink = {
   color: '#999999',
   textDecoration: 'underline',
 };
-export default ResetPasswordEmail;
+export default RegisterCaptchaEmail;

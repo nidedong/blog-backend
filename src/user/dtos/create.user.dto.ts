@@ -8,7 +8,7 @@ export class CreateUserDto {
     description: '昵称',
     required: false,
   })
-  nikeName?: string;
+  nickName?: string;
 
   @IsOptional()
   @ApiProperty({
@@ -46,9 +46,7 @@ export class CreateUserDto {
   })
   avatar?: string;
 
-  @IsNotEmpty({
-    message: getI18nPath('tip.api_param_property_not_empty'),
-  })
+  @IsOptional()
   @ApiProperty({
     description: '性别',
     type: 'integer',

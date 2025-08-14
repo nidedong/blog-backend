@@ -14,9 +14,10 @@ import { UserModule } from './user/user.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtAuthGuard } from 'shared/guards/jwt.auth.guard';
 import { RefreshTokenInterceptor } from 'shared/interceptor/refresh.token.interceptor';
+import { FileModule } from './file/file.module';
 
 @Module({
-  imports: [SharedModule, UserModule, TestModule],
+  imports: [SharedModule, UserModule, TestModule, FileModule],
   providers: [
     {
       // 刷新token

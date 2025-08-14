@@ -11,8 +11,9 @@ import { IGithubAuthData } from '../interfaces';
 import { UserRepository } from '../repositories/user.repository';
 import { RedisPrefix } from 'shared/common';
 import * as bcrypt from 'bcrypt';
-import { VerificationCodeDto } from '../dtos/verification.code.dto';
 import { MailService } from 'shared/services/mail/mail.services';
+import { LoginByCaptchaDto } from 'user/dtos/login.captcha.dto';
+import { getRandomLetters } from 'shared/helpers/encrypt';
 
 @Injectable()
 export class UserService {
@@ -23,18 +24,6 @@ export class UserService {
     private readonly mailService: MailService,
   ) {}
 
-  async sendVerificationCode(verificationInfo: VerificationCodeDto) {
-    const captcha = Math.floor(Math.random() * 10000) + '';
-
-    await this.mailService.sendRegisterCaptcha(verificationInfo.email, captcha);
-
-    await this.redisService.set(
-      RedisService.gk(RedisPrefix.Captcha, verificationInfo.email),
-      captcha,
-      60 * 5,
-    );
-  }
-
   async createUserByEmail(user: CreateUserDto) {
     const exist = await this.userRepo.existsBy({
       email: user.email,
@@ -44,7 +33,7 @@ export class UserService {
       throw ApiException.tipError('user.user_already_exist');
     }
 
-    const redisKey = RedisService.gk(RedisPrefix.Captcha, user.email);
+    const redisKey = RedisService.gk(RedisPrefix.RegisterCaptcha, user.email);
 
     const captcha = await this.redisService.get(redisKey);
 
@@ -57,7 +46,7 @@ export class UserService {
     }
 
     const userEntity = new UserEntity();
-    userEntity.nikeName = user.nikeName;
+    userEntity.nickName = user.nickName;
     userEntity.avatar = user.avatar;
     userEntity.email = user.email;
     userEntity.gender = user.gender;
@@ -65,17 +54,21 @@ export class UserService {
     userEntity.avatar = user.avatar;
     userEntity.registerType = RegisterType.EMAIL;
 
+    if (!userEntity.nickName) {
+      userEntity.nickName = `${getRandomLetters(5)}_${new Date().getTime()}`;
+    }
+
     userEntity.password = await bcrypt.hash(user.password, 12);
 
     await this.userRepo.insertByEntity(userEntity);
 
-    this.redisService.del(redisKey);
+    await this.redisService.del(redisKey);
   }
 
   async createUserByGithubInfo(authInfo: IGithubAuthData) {
     const userEntity = new UserEntity();
     userEntity.githubId = authInfo.id;
-    userEntity.nikeName = authInfo.username;
+    userEntity.nickName = authInfo.username;
     userEntity.registerType = RegisterType.GITHUB;
     return this.userRepo.saveByEntity(userEntity);
   }
@@ -84,7 +77,7 @@ export class UserService {
     return this.userRepo.selectUserBaseInfoById(userId);
   }
 
-  async logoff(userId: string) {
+  async logout(userId: string) {
     const user = await this.userRepo.findOne({
       where: {
         id: userId,
@@ -98,10 +91,7 @@ export class UserService {
     if (user.deleteAt) {
       throw ApiException.tipError('user.user_already_deleted');
     }
-
-    await this.redisService.del(RedisService.gk(RedisPrefix.Token, userId));
-
-    this.userRepo.softDelete(userId);
+    await this.redisService.del(RedisService.gk(RedisPrefix.Token, user.id));
   }
 
   async selectUserByPagination(params: BasePaginatedParamsDto) {
@@ -151,6 +141,27 @@ export class UserService {
     }
   }
 
+  async validateByCaptcha(dto: LoginByCaptchaDto) {
+    const user = await this.userRepo.findOneBy({
+      email: dto.email,
+    });
+
+    if (!user) {
+      throw ApiException.tipError('user.user_not_exist');
+    }
+
+    const redisKey = RedisService.gk(RedisPrefix.LoginCaptcha, user.email);
+
+    const captcha = await this.redisService.get(redisKey);
+
+    if (+captcha === +dto.captcha) {
+      await this.redisService.del(redisKey);
+      return this.selectJwtUserDataFromEntity(user);
+    }
+
+    throw ApiException.tipError('tip.api_verification_code_error');
+  }
+
   async createToken(userInfo: JwtUserData) {
     const token = this.jwtService.sign(userInfo);
     await this.redisService.set(
@@ -163,13 +174,16 @@ export class UserService {
     return token;
   }
 
-  async refreshToken(userInfo: JwtUserData): Promise<JwtUserData | undefined> {
-    if (!userInfo || !userInfo.id) return;
-    const accessToken = await this.redisService.get(
+  async refreshToken(
+    userInfo: JwtUserData,
+    accessToken: string | undefined,
+  ): Promise<JwtUserData | undefined> {
+    if (!userInfo || !userInfo.id || !accessToken) return;
+    const memoAccessToken = await this.redisService.get(
       RedisService.gk(RedisPrefix.Token, userInfo.id),
     );
 
-    if (accessToken) {
+    if (memoAccessToken && memoAccessToken === accessToken) {
       const refreshToken = await this.createToken(userInfo);
       return {
         ...userInfo,

@@ -31,7 +31,7 @@ const RegisterCaptchaEmail = ({
       <Head>
         <title>您的验证码 - {companyName}</title>
       </Head>
-      <Preview>您的{companyName}验证码</Preview>
+      <Preview>您的【{companyName}】注册账号验证码</Preview>
 
       <Body style={main}>
         <Container style={container}>
@@ -49,7 +49,7 @@ const RegisterCaptchaEmail = ({
             </Heading>
 
             <Text style={paragraph}>
-              您正在尝试登录或执行敏感操作，请输入以下验证码完成验证：
+              您正在尝试注册账号或执行敏感操作，请输入以下验证码完成验证：
             </Text>
 
             {/* 验证码展示区 */}

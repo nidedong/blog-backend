@@ -8,3 +8,8 @@ export enum RegisterType {
   GOOGLE = 1,
   GITHUB = 2,
 }
+
+export enum BooleanType {
+  FALSE = 0,
+  TRUE = 1,
+}
