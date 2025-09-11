@@ -10,7 +10,7 @@ export class UserEntity extends BaseEntity {
     comment: 'nick name',
     length: 50,
   })
-  nikeName?: string;
+  nickName?: string;
 
   @Column({
     name: 'mobile_phone',

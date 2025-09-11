@@ -4,7 +4,7 @@ import {
   Controller,
   Get,
   Post,
-  Query,
+  Put,
   Req,
   Res,
   UseGuards,
@@ -12,27 +12,23 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-import { IsPublic } from 'shared/decorator';
-import { BasePaginatedParamsDto } from 'shared/dtos/base.paginated.params.dto';
+import { IsPublic, User } from 'shared/decorator';
 import { StrategyEnum } from 'shared/enums';
 import { EnvironmentVariable } from 'shared/interfaces';
+import { ChangePasswordDto } from 'user/dtos/changepassord.dto';
 import { CreateUserDto } from 'user/dtos/create.user.dto';
-import { LoginByEmailDto } from 'user/dtos/login.email.dto';
-import { VerificationCodeDto } from 'user/dtos/verification.code.dto';
+import { LoginByCaptchaDto } from 'user/dtos/login.captcha.dto';
+import { UpdateUserDto } from 'user/dtos/update.user.dto';
 import { LocalAuthGuard } from 'user/guards/local.auth.guard';
+import { ProfileService } from 'user/services/profile.service';
 
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
+    private readonly profileService: ProfileService,
     private readonly configService: ConfigService<EnvironmentVariable>,
   ) {}
-
-  @IsPublic()
-  @Post('/captcha')
-  sendVerificationCode(@Body() verificationInfo: VerificationCodeDto) {
-    return this.userService.sendVerificationCode(verificationInfo);
-  }
 
   @IsPublic()
   @Post('/register')
@@ -43,8 +39,18 @@ export class UserController {
   @IsPublic()
   @UseGuards(LocalAuthGuard)
   @Post('/login/email')
-  async loginByEmail(@Body() _: LoginByEmailDto, @Req() request: Request) {
+  async loginByEmail(@Req() request: Request) {
     const accessToken = await this.userService.createToken(request.user);
+    return {
+      accessToken,
+    };
+  }
+
+  @IsPublic()
+  @Post('/login/captcha')
+  async loginByCaptcha(@Body() dto: LoginByCaptchaDto) {
+    const user = await this.userService.validateByCaptcha(dto);
+    const accessToken = await this.userService.createToken(user);
     return {
       accessToken,
     };
@@ -88,13 +94,23 @@ export class UserController {
     return response.redirect(clientHomePage);
   }
 
-  @Post('/logoff')
-  logoff(@Body('id') userId: string) {
-    return this.userService.logoff(userId);
+  @Put('/logout')
+  logout(@Req() request: Request) {
+    return this.userService.logout(request.user.id);
   }
 
-  @Get('/list')
-  getUserList(@Query() params: BasePaginatedParamsDto) {
-    return this.userService.selectUserByPagination(params);
+  @Get('/profile')
+  getProfile(@Req() request: Request) {
+    return this.profileService.getProfile(request.user.id);
+  }
+
+  @Put('/profile')
+  updateProfile(@User('id') userId: string, @Body() dto: UpdateUserDto) {
+    return this.profileService.updateProfile(userId, dto);
+  }
+
+  @Put('/changepassword')
+  changePasswrod(@Body() dto: ChangePasswordDto, @Req() request: Request) {
+    return this.profileService.changePasswrod(request.user.id, dto);
   }
 }

@@ -11,6 +11,9 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GithubStrategy } from './strategies/github.strategy';
+import { CaptchaController } from './controllers/captcha.controller';
+import { CaptchaService } from './services/captcha.service';
+import { ProfileService } from './services/profile.service';
 
 @Module({
   imports: [
@@ -30,13 +33,15 @@ import { GithubStrategy } from './strategies/github.strategy';
   ],
   providers: [
     UserService,
+    CaptchaService,
+    ProfileService,
     UserRepository,
     LocalStrategy,
     JwtStrategy,
     GoogleStrategy,
     GithubStrategy,
   ],
-  controllers: [UserController],
+  controllers: [UserController, CaptchaController],
   exports: [UserService, UserRepository],
 })
 export class UserModule {}

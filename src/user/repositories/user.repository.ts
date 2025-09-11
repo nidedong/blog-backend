@@ -39,7 +39,7 @@ export class UserRepository extends Repository<UserEntity> {
       },
       select: [
         'id',
-        'nikeName',
+        'nickName',
         'avatar',
         'locale',
         'email',
@@ -53,10 +53,10 @@ export class UserRepository extends Repository<UserEntity> {
   async selectUserByPagination(pageInfo: BasePaginatedParamsDto) {
     const { start, end, order } = pageInfo;
 
-    return this.find({
+    const [list, total] = await this.findAndCount({
       select: [
         'id',
-        'nikeName',
+        'nickName',
         'avatar',
         'locale',
         'email',
@@ -71,5 +71,10 @@ export class UserRepository extends Repository<UserEntity> {
         createdAt: order,
       },
     });
+
+    return {
+      list,
+      total,
+    };
   }
 }

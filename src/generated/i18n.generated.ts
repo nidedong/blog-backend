@@ -5,6 +5,9 @@
 import { Path } from "nestjs-i18n";
 /* prettier-ignore */
 export type I18nTranslations = {
+    "file": {
+        "file_not_exist": string;
+    };
     "tip": {
         "api_validate_exception_not_legal": string;
         "api_param_id_not_empty": string;

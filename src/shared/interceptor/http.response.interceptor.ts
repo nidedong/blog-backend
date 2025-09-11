@@ -5,6 +5,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { map } from 'rxjs';
 import { DefaultStatusMessage } from 'shared/common';
 import { IHttpSuccessResponse } from 'shared/interfaces';
@@ -17,6 +18,19 @@ export class HttpResponseInterceptor implements NestInterceptor {
         if (data?.response instanceof Buffer) {
           return data.response;
         }
+
+        const response = context.switchToHttp().getResponse<Response>();
+
+        // 不要缓存接口
+        response.setHeaders(
+          new Headers({
+            'Cache-Control':
+              'no-store, no-cache, must-revalidate, proxy-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          }),
+        );
+
         if (data?.code) {
           return data;
         }

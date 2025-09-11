@@ -5,7 +5,7 @@
  * :copyright: (c) 2025, Tungee
  * :date created: 2025-02-10 16:18:51
  * :last editor: dongbibo
- * :date last edited: 2025-07-03 11:17:48
+ * :date last edited: 2025-09-03 11:40:09
  */
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -28,6 +28,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseConfigService } from './services/config/database.config.service';
 import { MailModule } from './services/mail/mail.module';
 import { MailConfigService } from './services/config/mail.config.service';
+import { omit } from 'lodash';
 
 @Global()
 @Module({
@@ -36,12 +37,15 @@ import { MailConfigService } from './services/config/mail.config.service';
       isGlobal: true,
       envFilePath: isDevMode
         ? [
-            resolve(__dirname, '../env/.env.defaults'),
+            resolve(__dirname, '../env/.env.development.local'),
             resolve(__dirname, '../env/.env.development'),
+            resolve(__dirname, '../env/.env.defaults'),
           ]
         : [
-            resolve(__dirname, '../env/.env.defaults'),
+            resolve(__dirname, '../env/.env'),
+            resolve(__dirname, '../env/.env.production.local'),
             resolve(__dirname, '../env/.env.production'),
+            resolve(__dirname, '../env/.env.defaults'),
           ],
       load: [configuration],
     }),
@@ -60,7 +64,7 @@ import { MailConfigService } from './services/config/mail.config.service';
       useFactory(configService: ConfigService<EnvironmentVariable>) {
         const minioConfig = configService.get('minio', { infer: true });
         return {
-          ...minioConfig,
+          ...omit(minioConfig, 'bucketName'),
         };
       },
     }),

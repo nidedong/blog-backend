@@ -40,3 +40,13 @@
 ```sh
   pnpm run migration:run
 ```
+
+## 发布流程
+
+1. 执行release命令
+
+```sh
+  pnpm run release
+```
+
+2. 去gitlab合并至发布分支

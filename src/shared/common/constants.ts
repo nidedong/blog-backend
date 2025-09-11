@@ -11,5 +11,11 @@ export const ENABLE_VISIT_NOT_LOGIN = 'ENABLE_VISIT_NOT_LOGIN';
 
 export enum RedisPrefix {
   Token = 'token',
-  Captcha = 'captcha',
+  LoginCaptcha = 'login_captcha',
+  RegisterCaptcha = 'register_captcha',
+  ChangePasswordCaptcha = 'change_password_captcha',
+}
+
+export enum TimeInterval {
+  SevenDays = 604800,
 }
