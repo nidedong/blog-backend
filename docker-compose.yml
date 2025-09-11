@@ -1,0 +1,37 @@
+
+services:
+  app:
+    image: dongbbb/blog-nestjs:latest
+    container_name: app-blog
+    restart: on-failure:3
+    pull_policy: always
+    ports:
+      - "${APP_PORT}:4000"
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - /opt/app-blog/env:/app/dist/env
+
+  mysql:
+    image: mysql:8.4
+    container_name: mysql-blog
+    restart: on-failure:3
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - /opt/mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+
+  redis:
+    image: redis:8.2
+    container_name: redis-blog
+    restart: on-failure:3
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - /opt/redis:/data
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"

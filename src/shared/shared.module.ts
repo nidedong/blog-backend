@@ -5,7 +5,7 @@
  * :copyright: (c) 2025, Tungee
  * :date created: 2025-02-10 16:18:51
  * :last editor: dongbibo
- * :date last edited: 2025-08-02 16:33:00
+ * :date last edited: 2025-09-03 11:40:09
  */
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -42,6 +42,7 @@ import { omit } from 'lodash';
             resolve(__dirname, '../env/.env.defaults'),
           ]
         : [
+            resolve(__dirname, '../env/.env'),
             resolve(__dirname, '../env/.env.production.local'),
             resolve(__dirname, '../env/.env.production'),
             resolve(__dirname, '../env/.env.defaults'),

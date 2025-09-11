@@ -1,0 +1,22 @@
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: mysql-blog
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - /Users/dongbibo/blog/mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+
+  redis:
+    image: redis:8.2
+    container_name: redis-blog
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - /Users/dongbibo/blog/redis:/data
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
