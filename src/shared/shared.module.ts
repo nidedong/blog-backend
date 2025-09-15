@@ -5,7 +5,7 @@
  * :copyright: (c) 2025, Tungee
  * :date created: 2025-02-10 16:18:51
  * :last editor: dongbibo
- * :date last edited: 2025-09-03 11:40:09
+ * :date last edited: 2025-09-12 10:49:45
  */
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -29,6 +29,7 @@ import { DatabaseConfigService } from './services/config/database.config.service
 import { MailModule } from './services/mail/mail.module';
 import { MailConfigService } from './services/config/mail.config.service';
 import { omit } from 'lodash';
+import { ReqLogInteceptor } from './interceptor/req.log.interceptor';
 
 @Global()
 @Module({
@@ -76,6 +77,10 @@ import { omit } from 'lodash';
     }),
   ],
   providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ReqLogInteceptor,
+    },
     {
       // 格式化响应信息
       provide: APP_INTERCEPTOR,

@@ -3,7 +3,7 @@ services:
   app:
     image: dongbbb/blog-nestjs:latest
     container_name: app-blog
-    restart: on-failure:3
+    restart: unless-stopped
     pull_policy: always
     ports:
       - "${APP_PORT}:4000"

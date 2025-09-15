@@ -13,23 +13,21 @@ import { IHttpSuccessResponse } from 'shared/interfaces';
 @Injectable()
 export class HttpResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler) {
+    const response = context.switchToHttp().getResponse<Response>();
+    // 不要缓存接口
+    response.setHeaders(
+      new Headers({
+        'Cache-Control':
+          'no-store, no-cache, must-revalidate, proxy-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      }),
+    );
     return next.handle().pipe(
       map((data: any) => {
         if (data?.response instanceof Buffer) {
           return data.response;
         }
-
-        const response = context.switchToHttp().getResponse<Response>();
-
-        // 不要缓存接口
-        response.setHeaders(
-          new Headers({
-            'Cache-Control':
-              'no-store, no-cache, must-revalidate, proxy-revalidate',
-            Pragma: 'no-cache',
-            Expires: '0',
-          }),
-        );
 
         if (data?.code) {
           return data;

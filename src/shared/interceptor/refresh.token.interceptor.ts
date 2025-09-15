@@ -35,15 +35,9 @@ export class RefreshTokenInterceptor implements NestInterceptor {
     const accessToken = request.headers.authorization.split(' ')?.[1];
 
     let user = request.user;
-    console.log(
-      '🚀 ~ RefreshTokenInterceptor ~ intercept ~ accessToken:',
-      accessToken,
-      user,
-    );
 
     // token过期
     if (dayjs(user.exp * 1000).isBefore(dayjs())) {
-      console.log('-----------------');
       user = await this.userService.refreshToken(
         omit(user, 'refreshToken', 'iat', 'exp'),
         accessToken,

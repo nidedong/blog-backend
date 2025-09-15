@@ -1,0 +1,9 @@
+{
+  "api_validate_exception_not_legal": "Parameter validation error: not valid",
+  "api_param_id_not_empty": "ID cannot be empty",
+  "api_param_property_not_empty": "{property} cannot be empty",
+  "api_email_format_not_correct": "Email format is incorrect",
+  "api_not_exist": "API does not exist",
+  "api_verification_code_expire": "Verification code has expired",
+  "api_verification_code_error": "Verification code is incorrect"
+}
