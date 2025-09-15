@@ -89,9 +89,10 @@ export class UserController {
       infer: true,
     }).clientHomePage;
 
-    response.setHeader('access_token', accessToken);
+    const redirectUrl = new URL(clientHomePage);
+    redirectUrl.searchParams.append('access_token', accessToken);
 
-    return response.redirect(clientHomePage);
+    return response.redirect(redirectUrl.toString());
   }
 
   @Put('/logout')
