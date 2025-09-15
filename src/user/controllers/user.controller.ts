@@ -89,10 +89,11 @@ export class UserController {
       infer: true,
     }).clientHomePage;
 
-    const redirectUrl = new URL(clientHomePage);
-    redirectUrl.searchParams.append('access_token', accessToken);
+    response.cookie('accessToken', accessToken, {
+      maxAge: 120 * 1000,
+    });
 
-    return response.redirect(redirectUrl.toString());
+    return response.redirect(clientHomePage);
   }
 
   @Put('/logout')
