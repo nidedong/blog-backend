@@ -1,0 +1,7 @@
+{
+  "user_not_exist": "User does not exist",
+  "user_already_exist": "User already exists",
+  "user_already_deleted": "User has been deleted",
+  "user_password_error": "Incorrect password",
+  "user_github_info_miss": "User GitHub information is missing"
+}

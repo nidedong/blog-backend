@@ -41,7 +41,7 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            docker compose -f /opt/app-blog/docker-compose.yml --env-file /opt/app-blog/env/.env down
+            docker compose -p blog-backend-prod stop
             docker compose -f /opt/app-blog/docker-compose.yml --env-file /opt/app-blog/env/.env -p blog-backend-prod up -d
             # 删除超出两天未使用的镜像
             docker image prune -a --force --filter "until=48h"
