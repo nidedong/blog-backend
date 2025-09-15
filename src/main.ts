@@ -8,6 +8,7 @@ import { EnvironmentVariable } from 'shared/interfaces';
 import { environment } from 'app.environment';
 import { initSwagger } from 'init';
 import { I18nValidationPipe } from 'nestjs-i18n';
+import * as CookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -27,6 +28,8 @@ async function bootstrap() {
   app.setGlobalPrefix(appConfig.prefix);
 
   app.enableCors();
+
+  app.use(CookieParser());
 
   app.useGlobalPipes(
     new I18nValidationPipe({
