@@ -30,4 +30,10 @@ export class CaptchaController {
       verificationInfo,
     );
   }
+
+  @IsPublic()
+  @Get('/forgetpassword')
+  sendForgetpasswordCaptcha(@Query() verificationInfo: VerificationCodeDto) {
+    return this.captchaService.sendForgetpasswordCaptcha(verificationInfo);
+  }
 }

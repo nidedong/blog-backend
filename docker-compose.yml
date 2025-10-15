@@ -12,7 +12,9 @@ services:
       - redis
     volumes:
       - /opt/app-blog/env:/app/dist/env
-
+      - /opt/app-blog/logs:/app/logs
+    environment:
+      - TZ=Asia/Shanghai
   mysql:
     image: mysql:8.4
     container_name: mysql-blog

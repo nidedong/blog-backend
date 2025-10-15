@@ -14,6 +14,7 @@ export enum RedisPrefix {
   LoginCaptcha = 'login_captcha',
   RegisterCaptcha = 'register_captcha',
   ChangePasswordCaptcha = 'change_password_captcha',
+  ForgetPasswordCaptcha = 'forget_password_captcha',
 }
 
 export enum TimeInterval {

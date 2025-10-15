@@ -78,4 +78,30 @@ export class CaptchaService {
       60 * 5,
     );
   }
+
+  async sendForgetpasswordCaptcha(verificationInfo: VerificationCodeDto) {
+    const captcha = this.createCaptcha();
+
+    const user = await this.userRepo.findOneBy({
+      email: verificationInfo.email,
+    });
+
+    if (!user) {
+      throw ApiException.tipError('user.user_not_exist');
+    }
+
+    await this.mailService.sendResetPasswordCaptcha(verificationInfo.email, {
+      captcha,
+      userName: user.nickName,
+    });
+
+    await this.redisService.set(
+      RedisService.gk(
+        RedisPrefix.ForgetPasswordCaptcha,
+        verificationInfo.email,
+      ),
+      captcha,
+      60 * 5,
+    );
+  }
 }

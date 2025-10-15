@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { MailService } from 'shared/services/mail/mail.services';
 import { LoginByCaptchaDto } from 'user/dtos/login.captcha.dto';
 import { getRandomLetters } from 'shared/helpers/encrypt';
+import { ForgetPasswordDto } from 'user/dtos/forgetpassword.dto';
 
 @Injectable()
 export class UserService {
@@ -63,6 +64,35 @@ export class UserService {
     await this.userRepo.insertByEntity(userEntity);
 
     await this.redisService.del(redisKey);
+  }
+
+  async forgetpassword(dto: ForgetPasswordDto) {
+    const user = await this.userRepo.findOneBy({
+      email: dto.email,
+    });
+
+    if (!user) {
+      throw ApiException.tipError('user.user_not_exist');
+    }
+
+    const redisKey = RedisService.gk(
+      RedisPrefix.ForgetPasswordCaptcha,
+      user.email,
+    );
+
+    const captcha = await this.redisService.get(redisKey);
+
+    if (!captcha) {
+      throw ApiException.tipError('tip.api_verification_code_expire');
+    }
+
+    if (+captcha !== +dto.captcha) {
+      throw ApiException.tipError('tip.api_verification_code_error');
+    }
+
+    user.password = await bcrypt.hash(dto.password, 12);
+
+    await this.userRepo.save(user);
   }
 
   async createUserByGithubInfo(authInfo: IGithubAuthData) {

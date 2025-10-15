@@ -17,6 +17,7 @@ import { StrategyEnum } from 'shared/enums';
 import { EnvironmentVariable } from 'shared/interfaces';
 import { ChangePasswordDto } from 'user/dtos/changepassord.dto';
 import { CreateUserDto } from 'user/dtos/create.user.dto';
+import { ForgetPasswordDto } from 'user/dtos/forgetpassword.dto';
 import { LoginByCaptchaDto } from 'user/dtos/login.captcha.dto';
 import { UpdateUserDto } from 'user/dtos/update.user.dto';
 import { LocalAuthGuard } from 'user/guards/local.auth.guard';
@@ -34,6 +35,12 @@ export class UserController {
   @Post('/register')
   register(@Body() user: CreateUserDto) {
     return this.userService.createUserByEmail(user);
+  }
+
+  @IsPublic()
+  @Put('/forgetpassword')
+  forgetpassword(@Body() dto: ForgetPasswordDto) {
+    return this.userService.forgetpassword(dto);
   }
 
   @IsPublic()
