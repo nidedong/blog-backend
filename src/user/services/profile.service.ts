@@ -6,12 +6,21 @@ import { ChangePasswordDto } from 'user/dtos/changepassord.dto';
 import { UserRepository } from 'user/repositories/user.repository';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from 'user/dtos/update.user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { NotificationUserEntity } from 'notify/entities/notification_user.entity';
+import { Repository } from 'typeorm';
+import { FriendRequestEntity } from 'user/entities/friend.request.entity';
+import { FriendReqStatus } from 'user/interfaces';
 
 @Injectable()
 export class ProfileService {
   constructor(
     private readonly userRepo: UserRepository,
     private readonly redisService: RedisService,
+    @InjectRepository(NotificationUserEntity)
+    private readonly notificationUserRepo: Repository<NotificationUserEntity>,
+    @InjectRepository(FriendRequestEntity)
+    private readonly friendRequestRepo: Repository<FriendRequestEntity>,
   ) {}
 
   async getProfile(userId: string) {
@@ -21,7 +30,28 @@ export class ProfileService {
       throw ApiException.tipError('user.user_not_exist');
     }
 
-    return user;
+    // todo 计算消息统计
+    const unreadNotifycationCount = await this.notificationUserRepo.countBy({
+      userId,
+      isRead: false,
+    });
+
+    // 好友请求
+    const friendReqCount = await this.friendRequestRepo.countBy({
+      status: FriendReqStatus.Waiting,
+      receiverId: userId,
+    });
+
+    // unreadMessageCount
+
+    return {
+      ...user,
+      badges: {
+        notification: unreadNotifycationCount,
+        message: 0,
+        friendreq: friendReqCount,
+      },
+    };
   }
 
   async updateProfile(userId: string, dto: UpdateUserDto) {

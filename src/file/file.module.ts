@@ -9,5 +9,6 @@ import { FileRepository } from './repositories/file.repository';
   imports: [TypeOrmModule.forFeature([FileEntity])],
   controllers: [FileController],
   providers: [FileService, FileRepository],
+  exports: [FileService, FileRepository],
 })
 export class FileModule {}

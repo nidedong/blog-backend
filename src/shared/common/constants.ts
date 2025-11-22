@@ -15,8 +15,18 @@ export enum RedisPrefix {
   RegisterCaptcha = 'register_captcha',
   ChangePasswordCaptcha = 'change_password_captcha',
   ForgetPasswordCaptcha = 'forget_password_captcha',
+  OnlineUser = 'online',
 }
 
 export enum TimeInterval {
   SevenDays = 604800,
+}
+
+export class GatewayConstants {
+  public static readonly SOCKET_PORT: number = parseInt(
+    process.env.GATEWAY_PORT || '4002',
+    10,
+  );
+  public static readonly NOTIFICATION_NAMESPACE: string = '/notification';
+  public static readonly CHAT_NAMESPACE: string = '/chat';
 }

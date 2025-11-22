@@ -5,5 +5,6 @@
   "api_email_format_not_correct": "邮箱格式不正确",
   "api_not_exist": "接口不存在",
   "api_verification_code_expire": "验证码已过期",
-  "api_verification_code_error": "验证码错误"
+  "api_verification_code_error": "验证码错误",
+  "api_operate_data_item_not_exist": "操作数据不存在"
 }

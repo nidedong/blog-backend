@@ -8,6 +8,9 @@ export type I18nTranslations = {
     "file": {
         "file_not_exist": string;
     };
+    "notify": {
+        "notification_not_exist": string;
+    };
     "tip": {
         "api_validate_exception_not_legal": string;
         "api_param_id_not_empty": string;
@@ -16,6 +19,7 @@ export type I18nTranslations = {
         "api_not_exist": string;
         "api_verification_code_expire": string;
         "api_verification_code_error": string;
+        "api_operate_data_item_not_exist": string;
     };
     "user": {
         "user_not_exist": string;
@@ -23,6 +27,7 @@ export type I18nTranslations = {
         "user_already_deleted": string;
         "user_password_error": string;
         "user_github_info_miss": string;
+        "friend_req_expired": string;
     };
 };
 /* prettier-ignore */

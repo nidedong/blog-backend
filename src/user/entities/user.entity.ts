@@ -88,6 +88,14 @@ export class UserEntity extends BaseEntity {
     type: 'tinyint',
     width: 1,
     comment: '注册方式，0-邮箱密码, 1-google 2-github',
+    name: 'register_type',
   })
   registerType?: RegisterType;
+
+  @Column({
+    nullable: true,
+    type: 'boolean',
+    name: 'is_online',
+  })
+  isOnline?: boolean;
 }

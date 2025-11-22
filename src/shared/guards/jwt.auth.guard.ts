@@ -31,8 +31,8 @@ export class JwtAuthGuard extends AuthGuard(StrategyEnum.Jwt) {
     return super.canActivate(context);
   }
 
-  handleRequest<TUser = JwtUserData>(_, user: TUser | undefined): TUser {
-    if (!user) {
+  handleRequest<TUser = JwtUserData>(err, user: TUser | undefined): TUser {
+    if (err || !user) {
       throw new ServerException(
         CommonException.UNAUTHORIZED,
         HttpStatus.UNAUTHORIZED,

@@ -5,6 +5,7 @@ import { REDIS_MODULE_OPTIONS_TOKEN } from './redis.module.builder';
 @Injectable()
 export class RedisService {
   private readonly client: Redis;
+  private readonly subClient: Redis;
 
   private readonly logger = new Logger(RedisService.name);
 
@@ -17,6 +18,7 @@ export class RedisService {
     private readonly redisOptions: RedisOptions,
   ) {
     this.client = new Redis(this.redisOptions);
+    this.subClient = new Redis(this.redisOptions);
     this.client.on('ready', () => {
       this.logger.log('redis连接成功...');
     });
@@ -33,6 +35,10 @@ export class RedisService {
 
   getClient() {
     return this.client;
+  }
+
+  getSubClient() {
+    return this.subClient;
   }
 
   /* --------------------- string 相关 -------------------------- */

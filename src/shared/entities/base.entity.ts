@@ -15,14 +15,14 @@ export abstract class BaseEntity {
     comment: 'user ID of creator',
     nullable: true,
   })
-  createBy: string;
+  createBy?: string;
 
   @Column('uuid', {
     name: 'update_by',
     comment: 'ID of use who last updated id',
     nullable: true,
   })
-  updateBy: string;
+  updateBy?: string;
 
   @CreateDateColumn({
     name: 'create_at',

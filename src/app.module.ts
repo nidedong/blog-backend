@@ -5,19 +5,28 @@
  * :copyright: (c) 2025, Tungee
  * :date created: 2024-12-05 17:14:00
  * :last editor: dongbibo
- * :date last edited: 2025-07-03 11:12:47
+ * :date last edited: 2025-11-03 11:53:15
  */
 import { Module } from '@nestjs/common';
 import { SharedModule } from 'shared/shared.module';
-import { TestModule } from './test/test.module';
 import { UserModule } from './user/user.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtAuthGuard } from 'shared/guards/jwt.auth.guard';
 import { RefreshTokenInterceptor } from 'shared/interceptor/refresh.token.interceptor';
 import { FileModule } from './file/file.module';
+import { SocketModule } from 'socket/socket.module';
+import { NotifyModule } from './notify/notify.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
-  imports: [SharedModule, UserModule, TestModule, FileModule],
+  imports: [
+    SharedModule,
+    SocketModule,
+    NotifyModule,
+    ChatModule,
+    UserModule,
+    FileModule,
+  ],
   providers: [
     {
       // 刷新token

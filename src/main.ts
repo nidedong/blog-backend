@@ -6,7 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ConfigService } from '@nestjs/config';
 import { EnvironmentVariable } from 'shared/interfaces';
 import { environment } from 'app.environment';
-import { initSwagger } from 'init';
+import { initRedisIoAdapter, initSwagger } from 'init';
 import { I18nValidationPipe } from 'nestjs-i18n';
 
 async function bootstrap() {
@@ -21,6 +21,8 @@ async function bootstrap() {
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   initSwagger(app);
+
+  initRedisIoAdapter(app);
 
   app.useStaticAssets('public', { prefix: '/static' });
 

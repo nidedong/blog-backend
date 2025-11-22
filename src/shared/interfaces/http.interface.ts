@@ -11,11 +11,9 @@ export interface IHttpSuccessResponse<T> {
   data: T | IPaginateInfo<T>;
 }
 
-export interface IPaginateInfo<T> {
+export interface IPaginateInfo<T = any> {
   total: number;
-  pageNum: number;
-  pageSize: number;
-  records: T;
+  list: T[];
 }
 
 // Http response

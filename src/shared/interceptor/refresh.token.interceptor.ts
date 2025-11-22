@@ -7,7 +7,6 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import * as dayjs from 'dayjs';
 import { CommonException, ServerException } from 'shared/exception';
 import { omit } from 'lodash';
 import { ENABLE_VISIT_NOT_LOGIN } from 'shared/common';
@@ -37,7 +36,13 @@ export class RefreshTokenInterceptor implements NestInterceptor {
     let user = request.user;
 
     // token过期
-    if (dayjs(user.exp * 1000).isBefore(dayjs())) {
+    console.log(
+      '🚀 ~ RefreshTokenInterceptor ~ intercept ~ user.exp * 1000 <= Date.now():',
+      user.exp * 1000 <= Date.now(),
+      user.exp * 1000,
+      Date.now(),
+    );
+    if (user.exp * 1000 <= Date.now()) {
       user = await this.userService.refreshToken(
         omit(user, 'refreshToken', 'iat', 'exp'),
         accessToken,

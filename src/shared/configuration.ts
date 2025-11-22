@@ -68,6 +68,7 @@ export default () => {
       bucketName: process.env.MINIO_BUCKET_NAME,
     },
   };
+  console.log('🚀 ~ enviroment:', enviroment);
 
   return enviroment;
 };
