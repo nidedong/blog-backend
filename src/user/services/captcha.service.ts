@@ -3,7 +3,7 @@ import { RedisPrefix } from 'shared/common';
 import { ApiException } from 'shared/exception';
 import { MailService } from 'shared/services/mail/mail.services';
 import { RedisService } from 'shared/services/redis/redis.service';
-import { VerificationCodeDto } from 'user/dtos/verification.code.dto';
+import { VerificationCodeDto } from 'user/dtos/captcha/verification.code.dto';
 import { UserRepository } from 'user/repositories/user.repository';
 
 @Injectable()

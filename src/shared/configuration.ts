@@ -12,6 +12,7 @@ export default () => {
       prefix: process.env.APP_PREFIX,
       language: process.env.APP_LANGUAGE,
       secure: Object.is(process.env.APP_SECURE, 'true'),
+      instanceId: process.env.APP_INSTANCE_ID,
     },
     log: {
       level: process.env.LOG_LEVEL,

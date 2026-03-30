@@ -43,7 +43,7 @@ export class FileEntity extends BaseEntity {
 
   @Column({
     comment: '是否为公共文件',
-    type: 'tinyint',
+
     name: 'is_public',
     width: 1,
   })

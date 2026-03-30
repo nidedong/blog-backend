@@ -5,6 +5,7 @@ export interface EnvAppConfig {
   prefix: string;
   language: string;
   secure: boolean;
+  instanceId?: string;
 }
 
 export interface EnvLogConfig {

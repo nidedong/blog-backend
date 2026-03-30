@@ -1,11 +1,13 @@
 import { UserService } from './../services/user.service';
-import { Body, Controller, Get, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { User, VoPageResponse, VoResponse } from 'shared/decorator';
-import { ChangePasswordDto } from 'user/dtos/changepassord.dto';
-import { SearchUserParamsDto } from 'user/dtos/search.user.dto';
-import { UpdateUserDto } from 'user/dtos/update.user.dto';
+import { ChangePasswordDto } from 'user/dtos/user/changepassord.dto';
+import { GetUserStatusBatchDto } from 'user/dtos/user/get-user-status-batch.dto';
+import { SearchUserParamsDto } from 'user/dtos/user/search.user.dto';
+import { UpdateUserDto } from 'user/dtos/user/update.user.dto';
 import { ProfileService } from 'user/services/profile.service';
+import { GetProfileUseCase } from 'user/usecases/get-profile.uc';
 import { ProfileVo } from 'user/vos/profile.vo';
 import { UserVo } from 'user/vos/user.vo';
 
@@ -14,6 +16,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly profileService: ProfileService,
+    private readonly getProfileUseCase: GetProfileUseCase,
   ) {}
 
   @VoPageResponse(UserVo)
@@ -33,8 +36,8 @@ export class UserController {
 
   @Get('/profile')
   @VoResponse(ProfileVo)
-  getProfile(@Req() request: Request) {
-    return this.profileService.getProfile(request.user.id);
+  getProfile(@User('id') useId: string) {
+    return this.getProfileUseCase.execute(useId);
   }
 
   @Put('/profile')
@@ -50,5 +53,11 @@ export class UserController {
   @Get('/')
   createTestData() {
     return this.userService.createTestData();
+  }
+
+  //查询在线状态
+  @Post('/status/batch')
+  getFriendsStatus(@Body() dto: GetUserStatusBatchDto) {
+    return this.userService.getStatusBatch(dto.ids);
   }
 }

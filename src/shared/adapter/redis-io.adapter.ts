@@ -5,7 +5,6 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import { HttpStatus, INestApplicationContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CommonException, ServerException } from 'shared/exception';
-import dayjs from 'dayjs';
 import { GatewayConstants } from 'shared/common';
 
 export class RedisIoAdapter extends IoAdapter {

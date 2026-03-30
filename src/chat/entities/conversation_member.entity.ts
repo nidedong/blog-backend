@@ -8,6 +8,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { ConversationEntity } from './conversation.entity';
+import { UserEntity } from 'user/entities/user.entity';
 
 @Entity('conversation_member')
 @Index('idx_conversationId', ['conversationId'])
@@ -22,15 +23,37 @@ export class ConversationMemberEntity extends BaseEntity {
 
   @Column({
     type: 'uuid',
+    name: 'last_read_message_id',
+    nullable: true,
+  })
+  lastReadMessageId?: string;
+
+  @Column({
+    type: 'uuid',
+    name: 'user_id',
   })
   userId: string;
 
+  @ManyToOne(() => UserEntity)
+  @JoinColumn({
+    name: 'user_id',
+  })
+  user: UserEntity;
+
   @ManyToOne(() => ConversationEntity)
   @JoinColumn({
-    name: 'conversationId',
+    name: 'conversation_id',
   })
   conversation: ConversationEntity;
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    name: 'join_at',
+  })
   joinedAt: Date;
+
+  @CreateDateColumn({
+    name: 'last_active_at',
+    nullable: true,
+  })
+  lastActiveAt?: Date;
 }

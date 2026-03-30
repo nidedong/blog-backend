@@ -5,6 +5,9 @@
 import { Path } from "nestjs-i18n";
 /* prettier-ignore */
 export type I18nTranslations = {
+    "error": {
+        "member_not_in_conv": string;
+    };
     "file": {
         "file_not_exist": string;
     };

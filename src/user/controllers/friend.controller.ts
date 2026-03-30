@@ -1,9 +1,9 @@
 import { FriendService } from './../services/friend.service';
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { User, VoResponse } from 'shared/decorator';
-import { CreateFriendReqDto } from 'user/dtos/create.friend.req.dto';
-import { GetFriendReqDto } from 'user/dtos/get.friend.req.dto';
-import { HandleFriendReqDto } from 'user/dtos/handle.friend.req.dto';
+import { CreateFriendReqDto } from 'user/dtos/friend/create.friend.req.dto';
+import { GetFriendReqDto } from 'user/dtos/friend/get.friend.req.dto';
+import { HandleFriendReqDto } from 'user/dtos/friend/handle.friend.req.dto';
 import { FriendVo } from 'user/vos/Friend.vo';
 
 @Controller('friend')
@@ -34,8 +34,4 @@ export class FriendController {
   getFriendList(@User('id') userId: string) {
     return this.friendService.getFriendList(userId);
   }
-
-  //查询在线状态
-  @Get('/status/:id')
-  getFriendStatus() {}
 }

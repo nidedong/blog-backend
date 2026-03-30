@@ -1,5 +1,4 @@
 import { UseInterceptors, applyDecorators } from '@nestjs/common';
-import { ClassSerializerInterceptor } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
@@ -18,7 +17,7 @@ export function VoResponse(VoClass: any) {
   }
 
   return applyDecorators(
-    UseInterceptors(ClassSerializerInterceptor),
+    // UseInterceptors(ClassSerializerInterceptor),
     UseInterceptors(VoInterceptor),
   );
 }

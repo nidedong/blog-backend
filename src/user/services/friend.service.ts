@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { isNil } from 'lodash';
-import { NotificationMessage } from 'shared/enums';
+import { ConversationService } from 'chat/services/conversation.service';
+import { ConversationVo } from 'chat/vos/conversation.vo';
+import { isNil, keyBy, nth } from 'lodash';
+import { EventNames } from 'shared/enums';
 import { ApiException } from 'shared/exception';
-import { NotificationGateway } from 'socket/gateways/notification.gateway';
+import { RedisService } from 'shared/services/redis/redis.service';
 import { DataSource, Repository } from 'typeorm';
-import { CreateFriendReqDto } from 'user/dtos/create.friend.req.dto';
-import { GetFriendReqDto } from 'user/dtos/get.friend.req.dto';
-import { HandleFriendReqDto } from 'user/dtos/handle.friend.req.dto';
+import { CreateFriendReqDto } from 'user/dtos/friend/create.friend.req.dto';
+import { GetFriendReqDto } from 'user/dtos/friend/get.friend.req.dto';
+import { HandleFriendReqDto } from 'user/dtos/friend/handle.friend.req.dto';
 import { FriendEntity } from 'user/entities/friend.entity';
 import { FriendRequestEntity } from 'user/entities/friend.request.entity';
 import { FriendReqStatus } from 'user/interfaces';
@@ -21,7 +24,9 @@ export class FriendService {
     private readonly friendRepo: Repository<FriendEntity>,
     @InjectRepository(FriendRequestEntity)
     private readonly friendReqRepo: Repository<FriendRequestEntity>,
-    private readonly notificationGateway: NotificationGateway,
+    private readonly redisService: RedisService,
+    private readonly conversationService: ConversationService,
+    private readonly emitter: EventEmitter2,
   ) {}
 
   getFriendRelationList(userId: string, dto: GetFriendReqDto) {
@@ -72,13 +77,10 @@ export class FriendService {
     });
 
     // 通知接受者
-    this.notificationGateway.notifyUser(
-      dto.receiverId,
-      NotificationMessage.FRIEND_REQUEST,
-      {
-        count,
-      },
-    );
+    this.emitter.emit(EventNames.FRIEND_REQUEST, {
+      userId: dto.receiverId,
+      count,
+    });
   }
 
   async handleFriendReq(id: string, dto: HandleFriendReqDto) {
@@ -98,6 +100,8 @@ export class FriendService {
     }
 
     friendReq.status = dto.status;
+
+    let conversation: ConversationVo;
 
     await this.dataSource.transaction(async (entityManager) => {
       await entityManager.save(FriendRequestEntity, friendReq);
@@ -124,12 +128,34 @@ export class FriendService {
             status: FriendReqStatus.Expire,
           });
         }
-        /**
-         * todo
-         * 创建聊天室
-         * 将聊天室数据推送给前端
-         */
+        conversation = await this.conversationService.createPrivateChat([
+          friendReq.senderId,
+          friendReq.receiverId,
+        ]);
       }
+    });
+
+    /**
+     * 同意的一方通过返回值添加到队列
+     * 接受的一方通过socket
+     */
+
+    if (!!conversation) {
+      this.emitter.emit(EventNames.NEW_CONV, {
+        userId: friendReq.senderId,
+        conversation,
+      });
+    }
+
+    const unreadCount = await this.getPendingReqCount(friendReq.receiverId);
+
+    return { conversation, unreadCount };
+  }
+
+  async getPendingReqCount(userId: string) {
+    return await this.friendReqRepo.countBy({
+      receiverId: userId,
+      status: FriendReqStatus.Waiting,
     });
   }
 
@@ -142,8 +168,30 @@ export class FriendService {
         friend: true,
       },
     });
-    // todo 将会话id返回
 
-    return list.map((item) => ({ ...item, ...item.friend }));
+    if (list.length === 0) return list;
+
+    const conversationList =
+      await this.conversationService.getPrivateConversationListByUsers(
+        list.map((item) => [item.userId, item.friendId]),
+      );
+
+    const conversationMap = keyBy(conversationList, 'p2pKey') || {};
+
+    return list.map((item) => {
+      const p2pKeys = this.conversationService.createP2PKeys([
+        item.userId,
+        item.friendId,
+      ]);
+      const conversationId =
+        conversationMap[nth(p2pKeys, 0)]?.id ||
+        conversationMap[nth(p2pKeys, 1)]?.id;
+
+      return {
+        ...item,
+        ...item.friend,
+        conversationId,
+      };
+    });
   }
 }

@@ -5,7 +5,7 @@
  * :copyright: (c) 2025, Tungee
  * :date created: 2025-02-10 16:18:51
  * :last editor: dongbibo
- * :date last edited: 2025-09-12 10:49:45
+ * :date last edited: 2026-01-12 16:40:43
  */
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -30,6 +30,8 @@ import { MailModule } from './services/mail/mail.module';
 import { MailConfigService } from './services/config/mail.config.service';
 import { omit } from 'lodash';
 import { ReqLogInteceptor } from './interceptor/req.log.interceptor';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { InstanceService } from './services/rest/instance.service';
 
 @Global()
 @Module({
@@ -49,6 +51,11 @@ import { ReqLogInteceptor } from './interceptor/req.log.interceptor';
             resolve(__dirname, '../env/.env.defaults'),
           ],
       load: [configuration],
+    }),
+    EventEmitterModule.forRoot({
+      wildcard: false,
+      delimiter: '.',
+      maxListeners: 20,
     }),
     WinstonModule.forRootAsync({
       useClass: LoggerConfigService,
@@ -90,6 +97,7 @@ import { ReqLogInteceptor } from './interceptor/req.log.interceptor';
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
     },
+    InstanceService,
   ],
   exports: [
     ConfigModule,
@@ -99,6 +107,7 @@ import { ReqLogInteceptor } from './interceptor/req.log.interceptor';
     RedisModule,
     MinioModule,
     MailModule,
+    InstanceService,
   ],
 })
 export class SharedModule {}

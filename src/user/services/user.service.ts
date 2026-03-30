@@ -5,20 +5,20 @@ import { JwtService } from '@nestjs/jwt';
 import { BasePaginatedParamsDto } from 'shared/dtos/base.paginated.params.dto';
 import { RegisterType, SorterEnum } from 'shared/interfaces';
 import { JwtUserData } from 'typing';
-import { CreateUserDto } from '../dtos/create.user.dto';
+import { CreateUserDto } from '../dtos/auth/create.user.dto';
 import { UserEntity } from '../entities/user.entity';
 import { IGithubAuthData } from '../interfaces';
 import { UserRepository } from '../repositories/user.repository';
 import { RedisPrefix } from 'shared/common';
 import * as bcrypt from 'bcrypt';
-import { MailService } from 'shared/services/mail/mail.services';
-import { LoginByCaptchaDto } from 'user/dtos/login.captcha.dto';
+import { LoginByCaptchaDto } from 'user/dtos/auth/login.captcha.dto';
 import { getRandomLetters } from 'shared/helpers/encrypt';
-import { ForgetPasswordDto } from 'user/dtos/forgetpassword.dto';
-import { SearchUserParamsDto } from 'user/dtos/search.user.dto';
+import { ForgetPasswordDto } from 'user/dtos/auth/forgetpassword.dto';
+import { SearchUserParamsDto } from 'user/dtos/user/search.user.dto';
 import { Like, Not } from 'typeorm';
 import { FriendEntity } from 'user/entities/friend.entity';
 import { FriendRequestEntity } from 'user/entities/friend.request.entity';
+import { SocketUtilsService } from 'socket/services/socket.utils.service';
 
 @Injectable()
 export class UserService {
@@ -26,7 +26,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly userRepo: UserRepository,
     private readonly redisService: RedisService,
-    private readonly mailService: MailService,
+    private readonly socketUtilsService: SocketUtilsService,
   ) {}
 
   async createUserByEmail(user: CreateUserDto) {
@@ -310,11 +310,22 @@ export class UserService {
           locale: 'en-US',
           githubId: null,
           registerType: 0,
-          isOnline: false,
         }),
       );
     }
 
     await this.userRepo.save(users);
+  }
+
+  async getStatusBatch(ids: string[]) {
+    const onlineIds = await this.socketUtilsService.getOnlineUsers(ids);
+    const onlineMap = onlineIds.reduce<Record<string, boolean>>(
+      (pre, id) => ({ ...pre, [id]: true }),
+      {},
+    );
+    return ids.reduce<Record<string, boolean>>(
+      (pre, id) => ({ ...pre, [id]: onlineMap[id] ? true : false }),
+      {},
+    );
   }
 }

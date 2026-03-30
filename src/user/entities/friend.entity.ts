@@ -1,5 +1,5 @@
 import { BaseEntity } from 'shared/entities/base.entity';
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { FriendStatus } from 'user/interfaces';
 import { UserEntity } from './user.entity';
 
@@ -25,7 +25,7 @@ export class FriendEntity extends BaseEntity {
   })
   status: FriendStatus;
 
-  @OneToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity)
   @JoinColumn({
     name: 'friend_id',
   })

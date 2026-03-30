@@ -15,17 +15,15 @@ import { Request, Response } from 'express';
 import { IsPublic } from 'shared/decorator';
 import { StrategyEnum } from 'shared/enums';
 import { EnvironmentVariable } from 'shared/interfaces';
-import { CreateUserDto } from 'user/dtos/create.user.dto';
-import { ForgetPasswordDto } from 'user/dtos/forgetpassword.dto';
-import { LoginByCaptchaDto } from 'user/dtos/login.captcha.dto';
+import { CreateUserDto } from 'user/dtos/auth/create.user.dto';
+import { ForgetPasswordDto } from 'user/dtos/auth/forgetpassword.dto';
+import { LoginByCaptchaDto } from 'user/dtos/auth/login.captcha.dto';
 import { LocalAuthGuard } from 'user/guards/local.auth.guard';
-import { ProfileService } from 'user/services/profile.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly userService: UserService,
-    private readonly profileService: ProfileService,
     private readonly configService: ConfigService<EnvironmentVariable>,
   ) {}
 

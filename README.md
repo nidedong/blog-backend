@@ -50,3 +50,27 @@
 ```
 
 2. 去gitlab合并至发布分支
+
+## Let’s Encrypt 证书过期
+
+1. 查看现有证书列表（检查是否真的过期）
+
+```sh
+  sudo certbot certificates
+```
+
+2. 强制为某个域名重新签发证书
+
+```sh
+sudo certbot --nginx -d blog.api.dongbibo.top 
+sudo certbot --nginx -d blog.dongbibo.top  
+sudo certbot --nginx -d dongbibo.top
+sudo certbot --nginx -d minio.api.dongbibo.top 
+sudo certbot --nginx -d minio.dongbibo.top
+```
+
+3. 重载 Web 服务
+
+```sh
+  sudo systemctl reload nginx
+```

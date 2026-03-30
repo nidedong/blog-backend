@@ -1,10 +1,11 @@
 import { BaseEntity } from 'shared/entities/base.entity';
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index } from 'typeorm';
 import { MessageType, MessageStatus } from '../interfaces';
-import { ConversationEntity } from './conversation.entity';
 
 @Entity('message')
 @Index('idx_conversationId_createdAt', ['conversationId', 'createdAt'])
+@Index('idx_conversationId_id', ['conversationId', 'id'])
+@Index('idx_conversationId_seq', ['conversationId', 'seq'])
 export class MessageEntity extends BaseEntity {
   @Column({
     type: 'uuid',
@@ -52,13 +53,19 @@ export class MessageEntity extends BaseEntity {
   content?: string;
 
   @Column({
+    type: 'bigint',
+    comment: '递增序列号',
+    transformer: {
+      to: (value: number) => value.toString(), // 将数字存储为字符串
+      from: (value: string) => Number(value), // 从字符串转换为数字
+    },
+  })
+  seq: number;
+
+  @Column({
     type: 'json',
     nullable: true,
     comment: '补充内容',
   })
   metadata?: Record<string, any>;
-
-  @ManyToOne(() => ConversationEntity)
-  @JoinColumn({ name: 'conversationId' })
-  conversation: ConversationEntity;
 }

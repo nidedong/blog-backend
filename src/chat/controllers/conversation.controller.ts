@@ -1,14 +1,33 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { GetConversationListDto } from 'chat/dtos/get.conversation.list.dto';
+import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
+import { CreateGroupConvDto } from 'chat/dtos/conversation/create.group.conv.dto';
+import { GetUnreadDto } from 'chat/dtos/conversation/get.unread.dto';
 import { ConversationService } from 'chat/services/conversation.service';
-import { User } from 'shared/decorator';
+import { MessageUnreadService } from 'chat/services/message.unread.service';
+import { ConversationVo } from 'chat/vos/conversation.vo';
+import { User, VoResponse } from 'shared/decorator';
+import { ServiceNameEnum } from 'shared/enums';
 
 @Controller('conversation')
 export class ConversationController {
-  constructor(private readonly conversationService: ConversationService) {}
+  constructor(
+    private readonly conversationService: ConversationService,
+    @Inject(ServiceNameEnum.MessageUnreadService)
+    private readonly msgUnreadService: MessageUnreadService,
+  ) {}
 
   @Get('/list')
-  getList(@User('id') userId: string, @Query() filter: GetConversationListDto) {
-    return this.conversationService.getList(userId, filter);
+  @VoResponse(ConversationVo)
+  getList(@User('id') userId: string) {
+    return this.conversationService.getList(userId);
+  }
+
+  @Post('/create/group')
+  createGroupConv(@Body() dto: CreateGroupConvDto) {
+    return this.conversationService.createGroupChat(dto);
+  }
+
+  @Get('unread_count')
+  getUnreadCount(@User('id') userId: string, @Body() dto: GetUnreadDto) {
+    return this.msgUnreadService.getUnreadCount(userId, dto.cids);
   }
 }

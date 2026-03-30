@@ -27,7 +27,4 @@ export class UserVo {
 
   @Expose()
   locale?: string;
-
-  @Expose()
-  isOnline?: boolean;
 }

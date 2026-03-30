@@ -1,57 +1,59 @@
 import { Injectable } from '@nestjs/common';
-import { RedisPrefix } from 'shared/common';
+import { RedisKeys, RedisPrefix } from 'shared/common';
 import { ApiException } from 'shared/exception';
 import { RedisService } from 'shared/services/redis/redis.service';
-import { ChangePasswordDto } from 'user/dtos/changepassord.dto';
+import { ChangePasswordDto } from 'user/dtos/user/changepassord.dto';
 import { UserRepository } from 'user/repositories/user.repository';
 import * as bcrypt from 'bcrypt';
-import { UpdateUserDto } from 'user/dtos/update.user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { NotificationUserEntity } from 'notify/entities/notification_user.entity';
-import { Repository } from 'typeorm';
-import { FriendRequestEntity } from 'user/entities/friend.request.entity';
-import { FriendReqStatus } from 'user/interfaces';
+import { UpdateUserDto } from 'user/dtos/user/update.user.dto';
+import { In } from 'typeorm';
+import { UserEntity } from 'user/entities/user.entity';
+import { keyBy } from 'lodash';
 
 @Injectable()
 export class ProfileService {
   constructor(
     private readonly userRepo: UserRepository,
     private readonly redisService: RedisService,
-    @InjectRepository(NotificationUserEntity)
-    private readonly notificationUserRepo: Repository<NotificationUserEntity>,
-    @InjectRepository(FriendRequestEntity)
-    private readonly friendRequestRepo: Repository<FriendRequestEntity>,
   ) {}
 
-  async getProfile(userId: string) {
-    const user = await this.userRepo.selectUserBaseInfoById(userId);
+  async ensureGetProfiles(userIds: string[]) {
+    const caches = await this.redisService.safeMget(
+      userIds.map((id) => RedisKeys.userProfile(id)),
+    );
 
-    if (!user) {
-      throw ApiException.tipError('user.user_not_exist');
+    const missIds: string[] = [];
+    let userMap: Record<string, UserEntity> = {};
+
+    caches.forEach((cache, index) => {
+      if (cache === null) {
+        missIds.push(userIds[index]);
+      } else {
+        userMap[userIds[index]] = JSON.parse(cache);
+      }
+    });
+
+    if (missIds.length > 0) {
+      const users = await this.userRepo.findBy({
+        id: In(missIds),
+      });
+
+      await this.redisService
+        .getClient()
+        .mset(
+          ...users.flatMap((u) => [
+            RedisKeys.userProfile(u.id),
+            JSON.stringify(u),
+          ]),
+        );
+
+      userMap = {
+        ...userMap,
+        ...keyBy(users, 'id'),
+      };
     }
 
-    // todo 计算消息统计
-    const unreadNotifycationCount = await this.notificationUserRepo.countBy({
-      userId,
-      isRead: false,
-    });
-
-    // 好友请求
-    const friendReqCount = await this.friendRequestRepo.countBy({
-      status: FriendReqStatus.Waiting,
-      receiverId: userId,
-    });
-
-    // unreadMessageCount
-
-    return {
-      ...user,
-      badges: {
-        notification: unreadNotifycationCount,
-        message: 0,
-        friendreq: friendReqCount,
-      },
-    };
+    return userIds.map((userId) => userMap[userId]);
   }
 
   async updateProfile(userId: string, dto: UpdateUserDto) {

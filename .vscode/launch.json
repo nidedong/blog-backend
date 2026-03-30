@@ -5,18 +5,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch via NPM",
-      "request": "launch",
-      "runtimeArgs": [
-        "run",
-        "start:dev"
-      ],
-      "runtimeExecutable": "npm",
+      "name": "Attach NestJS",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
       "skipFiles": [
         "<node_internals>/**"
-      ],
-      "type": "node",
-      "console": "integratedTerminal"
+      ]
     }
   ]
 }

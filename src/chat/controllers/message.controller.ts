@@ -1,5 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { GetConversationListDto } from 'chat/dtos/get.conversation.list.dto';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { CreateMsgDto } from 'chat/dtos/message/create.msg.dto';
+import { GetMsgListDto } from 'chat/dtos/message/get.msg.list.dto';
 import { MessageService } from 'chat/services/message.service';
 import { User } from 'shared/decorator';
 
@@ -7,8 +8,13 @@ import { User } from 'shared/decorator';
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
-  @Get('/list')
-  getList(@User('id') userId: string, @Query() filter: GetConversationListDto) {
-    return this.messageService.getList(userId, filter);
+  @Post('send')
+  sendMessage(@User('id') senderId: string, @Body() dto: CreateMsgDto) {
+    return this.messageService.sendMessage(senderId, dto);
+  }
+
+  @Get('list')
+  getList(@Query() dto: GetMsgListDto) {
+    return this.messageService.getList(dto);
   }
 }

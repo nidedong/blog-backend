@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import Redis, { RedisOptions } from 'ioredis';
+import Redis, { RedisKey, RedisOptions } from 'ioredis';
 import { REDIS_MODULE_OPTIONS_TOKEN } from './redis.module.builder';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class RedisService {
@@ -49,7 +50,7 @@ export class RedisService {
    * @param val key 对应的 val
    * @param seconds 可选，过期时间，单位 秒
    */
-  async set(key: string, val: string, seconds?: number) {
+  async set(key: string, val: string | number, seconds?: number) {
     if (!seconds) return await this.client.set(key, val);
     return await this.client.set(key, val, 'EX', seconds);
   }
@@ -58,7 +59,7 @@ export class RedisService {
    * 返回对应 value
    * @param key
    */
-  async get(key: string): Promise<string> {
+  async get(key: string): Promise<string | null> {
     if (!key || key === '*') return null;
     return await this.client.get(key);
   }
@@ -310,6 +311,11 @@ export class RedisService {
     return await this.client.lrem(key, count, val);
   }
 
+  async safeMget(keys: RedisKey[]) {
+    if (keys.length === 0) return [];
+    return this.client.mget(keys);
+  }
+
   /**
    * 移除列表最后一个元素，并将该元素添加到另一个裂膏并返回
    * 如果列表没有元素会阻塞队列直到等待超时或发现可弹出元素为止
@@ -324,5 +330,67 @@ export class RedisService {
   ): Promise<string> {
     if (!sourceKey || !destinationKey) return null;
     return await this.client.brpoplpush(sourceKey, destinationKey, timeout);
+  }
+
+  /**
+   * 尝试获取锁
+   */
+  async tryLock(key: string, ttl: number = 30) {
+    const value = randomUUID();
+    const locked = await this.client.set(key, value, 'EX', ttl, 'NX');
+    if (locked === 'OK') {
+      return { locked: true, value };
+    }
+    return { locked: false };
+  }
+
+  /**
+   * 释放锁（Lua 脚本，保证原子性）
+   */
+  async unlock(key: string, value: string) {
+    const lua = `
+    if redis.call("GET", KEYS[1]) == ARGV[1] then
+      return redis.call("DEL", KEYS[1])
+    else
+      return 0
+    end
+  `;
+    const result = await this.client.eval(lua, 1, key, value);
+    return result === 1;
+  }
+
+  async withLock<T>(
+    key: string,
+    fn: () => Promise<T>,
+    options?: {
+      ttl?: number;
+      onFail?: () => Promise<T> | T;
+    },
+  ) {
+    const ttl = options?.ttl ?? 30;
+    const { locked, value } = await this.tryLock(key, ttl);
+    if (!locked || !value) {
+      options?.onFail();
+      return;
+    }
+
+    try {
+      return await fn();
+    } finally {
+      try {
+        await this.unlock(key, value);
+      } catch (err) {
+        this.logger.error(`unlock failed: ${key}`, err);
+      }
+    }
+  }
+
+  async keys(pattern: string) {
+    const prefix = this.redisOptions.keyPrefix ?? '';
+    const keys = await this.client.keys(`${prefix}${pattern}`);
+
+    if (!prefix) return keys;
+
+    return keys.map((k) => (k.startsWith(prefix) ? k.slice(prefix.length) : k));
   }
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationBroadCastEntity } from './entities/notification_broadcast.entity';
 import { NotificationUserEntity } from './entities/notification_user.entity';
@@ -7,6 +7,7 @@ import { NotificationService } from './services/notification.service';
 import { UserEntity } from 'user/entities/user.entity';
 import { SocketModule } from 'socket/socket.module';
 import { UserModule } from 'user/user.module';
+import { BroadcastListener } from './listeners/broadcast.listener.ts';
 
 @Module({
   imports: [
@@ -16,10 +17,10 @@ import { UserModule } from 'user/user.module';
       UserEntity,
     ]),
     SocketModule,
-    UserModule,
+    forwardRef(() => UserModule),
   ],
   controllers: [NotificationController],
-  providers: [NotificationService],
+  providers: [NotificationService, BroadcastListener],
   exports: [NotificationService],
 })
 export class NotifyModule {}

@@ -1,10 +1,17 @@
-export enum NotificationMessage {
+export enum NotifySocketEvents {
   // 广播
   BROADCAST = 'BROADCAST',
   // 个人通知
   NOTIFY = 'NOTIFY',
   // 好友
   FRIEND_REQUEST = 'FRIEND_REQUEST',
+  FRIEND_STATUS = 'FRIEND_STATUS',
+  // 新对话
+  NEW_PRIVATE_CONVERSATION = 'NEW_PRIVATE_CONVERSATION',
+  CONV_UNREAD_UPDATED = 'CONV_UNREAD_UPDATED',
 }
 
-export enum ChatMessage {}
+export enum ChatSocketEvents {
+  NEW_MESSAGE = 'NEW_MESSAGE',
+  CLIENT_MSG_READ = 'CLIENT_MSG_READ',
+}

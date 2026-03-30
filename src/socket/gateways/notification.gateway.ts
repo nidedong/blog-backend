@@ -1,16 +1,14 @@
-import { RedisService } from './../../shared/services/redis/redis.service';
 import {
   WebSocketGateway,
   WebSocketServer,
-  SubscribeMessage,
-  ConnectedSocket,
-  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { GatewayConstants, RedisPrefix } from 'shared/common';
-import { NotificationMessage } from 'shared/enums';
+import { GatewayConstants } from 'shared/common';
 import { Server, Socket } from 'socket.io';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventNames } from 'shared/enums';
+import { JwtUserData } from 'typing';
 
 @WebSocketGateway(GatewayConstants.SOCKET_PORT, {
   namespace: GatewayConstants.NOTIFICATION_NAMESPACE,
@@ -21,50 +19,26 @@ import { Server, Socket } from 'socket.io';
 export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(private readonly redisService: RedisService) {}
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: Socket) {
-    const user = client.data?.user;
-    if (!user) return;
-    this.redisService
-      .getClient()
-      .sadd(RedisService.gk(RedisPrefix.OnlineUser, user.id), client.id);
+  async handleConnection(client: Socket) {
+    const user = client.data?.user as JwtUserData;
+    this.eventEmitter.emit(EventNames.SOCKET_CONNECTED, {
+      clientId: client.id,
+      userId: user.id,
+      namespace: client.nsp.name,
+    });
   }
 
-  handleDisconnect(client: Socket) {
-    const user = client.data?.user;
-    if (!user) return;
-    this.redisService
-      .getClient()
-      .srem(RedisService.gk(RedisPrefix.OnlineUser, user.id), client.id);
-  }
-
-  /** 通知指定用户 */
-  async notifyUser(userId: string, event: string, payload: any) {
-    const socketIds = await this.redisService
-      .getClient()
-      .smembers(RedisService.gk(RedisPrefix.OnlineUser, userId));
-
-    if (!socketIds.length) return false;
-
-    for (const id of socketIds) {
-      this.server.to(id).emit(event, payload);
-    }
-
-    return true;
-  }
-
-  @SubscribeMessage(NotificationMessage.BROADCAST)
-  handleBroadcast(@MessageBody() data: string) {
-    this.server.emit(data);
-  }
-
-  @SubscribeMessage(NotificationMessage.NOTIFY)
-  handleNotify(@ConnectedSocket() client: Socket, @MessageBody() data: string) {
-    console.log('-----emit');
-    client.emit('WELCOME', '123');
+  async handleDisconnect(client: Socket) {
+    const user = client.data?.user as JwtUserData;
+    this.eventEmitter.emit(EventNames.SOCKET_DISCONNECTED, {
+      clientId: client.id,
+      userId: user.id,
+      namespace: client.nsp.name,
+    });
   }
 }

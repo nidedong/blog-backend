@@ -20,11 +20,10 @@ export class UserRepository extends Repository<UserEntity> {
   }
 
   async selectUserInfoByEmail(email: string) {
-    return this.findOne({
-      where: {
-        email,
-      },
-    });
+    return this.createQueryBuilder('u')
+      .addSelect('u.password')
+      .where('u.email = :email', { email })
+      .getOne();
   }
 
   /**

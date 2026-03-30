@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { IsPublic } from 'shared/decorator';
-import { VerificationCodeDto } from 'user/dtos/verification.code.dto';
+import { VerificationCodeDto } from 'user/dtos/captcha/verification.code.dto';
 import { CaptchaService } from 'user/services/captcha.service';
 
 @Controller('captcha')

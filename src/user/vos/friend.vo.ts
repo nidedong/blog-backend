@@ -5,4 +5,7 @@ import { FriendStatus } from 'user/interfaces/friend.interface';
 export class FriendVo extends UserVo {
   @Expose()
   status: FriendStatus;
+
+  @Expose()
+  conversationId: string;
 }

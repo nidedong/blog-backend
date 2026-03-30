@@ -33,6 +33,7 @@ export class UserEntity extends BaseEntity {
     nullable: true,
     comment: 'password',
     length: 255,
+    select: false,
   })
   password?: string;
 
@@ -91,11 +92,4 @@ export class UserEntity extends BaseEntity {
     name: 'register_type',
   })
   registerType?: RegisterType;
-
-  @Column({
-    nullable: true,
-    type: 'boolean',
-    name: 'is_online',
-  })
-  isOnline?: boolean;
 }
